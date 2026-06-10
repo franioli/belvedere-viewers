@@ -4,5 +4,7 @@ services:
     build: .
     ports:
       - "8081:80"
+    environment:
+      - API_BASE=${API_BASE:-http://localhost:8000}
     volumes:
       - ./app:/var/www/html   # live reload — no rebuild needed on file changes
