@@ -510,7 +510,8 @@
           images.push(...results);
           fetched += results.length;
           setStatus(`Loaded ${fetched} images…`);
-          next = data.next ?? null;
+          // Ensure next-page URL matches the current scheme (guards against http→https proxy issues)
+          next = data.next ? data.next.replace(/^http:\/\//, `${location.protocol}//`) : null;
         }
 
         if (!images.length) {
