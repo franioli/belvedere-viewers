@@ -307,7 +307,7 @@
 
     // ── Presigned URL cache ───────────────────────────────────────────────────────
     const urlCache = new Map();  // image id → {url, expiresAt}
-    const URL_TTL_MS = 50 * 60 * 1000;  // 50 min (presigned URLs valid 1h)
+    const URL_TTL_MS = 12 * 60 * 1000;  // 12 min (presigned URLs valid 15 min)
 
     async function getPreviewUrl(img) {
       const cached = urlCache.get(img.id);
