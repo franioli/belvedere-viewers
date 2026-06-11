@@ -279,10 +279,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
   <!-- Flatpickr -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <!-- This fetches the API base URL from the config.php file -->
+  <script src="config.php"></script>
 
   <script>
-    const API_BASE = "http://localhost:8000";  // change to "http://localhost:8000" for local dev against a different origin
-
     const cameraSelect = document.getElementById("camera-select");
     const prevBtn = document.getElementById("prev-btn");
     const nextBtn = document.getElementById("next-btn");
@@ -320,8 +320,8 @@
     }
 
     function prefetchAdjacent(i) {
-      if (images[i - 1]) getPreviewUrl(images[i - 1]).catch(() => {});
-      if (images[i + 1]) getPreviewUrl(images[i + 1]).catch(() => {});
+      if (images[i - 1]) getPreviewUrl(images[i - 1]).catch(() => { });
+      if (images[i + 1]) getPreviewUrl(images[i + 1]).catch(() => { });
     }
 
     // ── Flatpickr ────────────────────────────────────────────────────────────────
