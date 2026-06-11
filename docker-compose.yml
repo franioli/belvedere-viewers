@@ -3,7 +3,7 @@ services:
   viewers:
     build: .
     ports:
-      - "8081:80"
+      - "8001:80"
     environment:
       - API_BASE=${API_BASE:-http://localhost:8000}
     volumes:

@@ -279,10 +279,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
   <!-- Flatpickr -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <!-- API config (reads API_BASE from server env) -->
-  <script src="config.php"></script>
 
   <script>
+    const API_BASE = "http://localhost:8000";  // change to "http://localhost:8000" for local dev against a different origin
 
     const cameraSelect = document.getElementById("camera-select");
     const prevBtn = document.getElementById("prev-btn");
@@ -305,6 +304,25 @@
     let playTimer = null;
     let sliderInstance = null;
     let sliderUpdating = false;  // prevent feedback loops between slider ↔ index
+
+    // ── Presigned URL cache ───────────────────────────────────────────────────────
+    const urlCache = new Map();  // image id → {url, expiresAt}
+    const URL_TTL_MS = 50 * 60 * 1000;  // 50 min (presigned URLs valid 1h)
+
+    async function getPreviewUrl(img) {
+      const cached = urlCache.get(img.id);
+      if (cached && Date.now() < cached.expiresAt) return cached.url;
+      const resp = await fetch(`${API_BASE}/cams/images/${img.id}/preview-url/`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const { url } = await resp.json();
+      urlCache.set(img.id, { url, expiresAt: Date.now() + URL_TTL_MS });
+      return url;
+    }
+
+    function prefetchAdjacent(i) {
+      if (images[i - 1]) getPreviewUrl(images[i - 1]).catch(() => {});
+      if (images[i + 1]) getPreviewUrl(images[i + 1]).catch(() => {});
+    }
 
     // ── Flatpickr ────────────────────────────────────────────────────────────────
     const datePicker = flatpickr("#date-picker-input", {
@@ -355,7 +373,7 @@
     }
 
     /** Display image at index i. */
-    function showImage(i) {
+    async function showImage(i) {
       if (!images.length) return;
       i = Math.max(0, Math.min(i, images.length - 1));
       current = i;
@@ -380,26 +398,28 @@
       // Update date picker (suppress its onChange)
       datePicker.setDate(dt, false);
 
-      // Load image
-      const url = `${API_BASE}/images/${img.id}/preview/`;
       showSpinner(true);
       mainImage.style.display = "none";
       placeholder.style.display = "none";
 
-      const newImg = new Image();
-      newImg.onload = () => {
-        // Apply EXIF rotation if needed (preview view already uses PIL exif_transpose,
-        // so rotation should already be applied — but kept as a fallback)
+      try {
+        const url = await getPreviewUrl(img);
+        mainImage.onload = () => {
+          mainImage.style.display = "block";
+          showSpinner(false);
+          prefetchAdjacent(i);
+        };
+        mainImage.onerror = () => {
+          placeholder.textContent = "Failed to load image.";
+          placeholder.style.display = "block";
+          showSpinner(false);
+        };
         mainImage.src = url;
-        mainImage.style.display = "block";
-        showSpinner(false);
-      };
-      newImg.onerror = () => {
-        placeholder.textContent = "Failed to load image.";
+      } catch (err) {
+        placeholder.textContent = `Failed to load image: ${err.message}`;
         placeholder.style.display = "block";
         showSpinner(false);
-      };
-      newImg.src = url;
+      }
     }
 
     // ── Slider setup ─────────────────────────────────────────────────────────────
@@ -470,6 +490,7 @@
       if (!slug) return;
       stopPlay();
       images = [];
+      urlCache.clear();
       mainImage.style.display = "none";
       placeholder.textContent = "Loading…";
       placeholder.style.display = "block";
@@ -480,7 +501,7 @@
         let page = 1;
         let fetched = 0;
         images = [];
-        let next = `${API_BASE}/api/images/?camera=${encodeURIComponent(slug)}&page_size=500`;
+        let next = `${API_BASE}/cams/images/?camera=${encodeURIComponent(slug)}&page_size=500`;
         while (next) {
           const resp = await fetch(next);
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -526,7 +547,7 @@
 
     (async () => {
       try {
-        const cameras = await fetchAll(`${API_BASE}/api/cameras/`);
+        const cameras = await fetchAll(`${API_BASE}/cams/cameras/`);
         cameras.forEach((cam) => {
           const opt = document.createElement("option");
           opt.value = cam.slug;
