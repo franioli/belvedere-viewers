@@ -1,5 +1,5 @@
-// Fetch years from fetch_data.php and populate the dropdown
-fetch("db/fetch_data.php")
+// Fetch survey years from the backend API and populate the dropdown
+fetch(`${API_BASE}/surveys/years/`)
   .then((response) => response.json())
   .then((years) => {
     const dropdown = document.getElementById("yearDropdown");
@@ -19,7 +19,7 @@ document
   .addEventListener("click", function () {
     const selectedYear = document.getElementById("yearDropdown").value;
     if (selectedYear) {
-      fetch("db/get_points.php?year=" + selectedYear)
+      fetch(`${API_BASE}/surveys/measurements/?year=${selectedYear}&is_fixed=false`)
         .then((response) => response.json())
         .then((points) => {
           // Assuming 'viewer.scene' is your Potree scene object

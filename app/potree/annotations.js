@@ -29,14 +29,14 @@ function createAnnotation(
     fetchVelocitytData(titleText, graphPanel);
   });
   // Fetch least and most recent survey dates
-  fetch(`db/fetch_velocity_data.php?pointLabel=${titleText}`)
+  fetch(`${API_BASE}/surveys/points/${encodeURIComponent(titleText)}/velocity/`)
     .then((response) => response.json())
     .then((data) => {
       // Check if data is available
       if (data && data.length > 0) {
         // Find the least and most recent survey dates
         const minSurveyDate = new Date(
-          Math.min(...data.map((entry) => new Date(entry.survey_date_fin)))
+          Math.min(...data.map((entry) => new Date(entry.survey_date_ini)))
         );
         const maxSurveyDate = new Date(
           Math.max(...data.map((entry) => new Date(entry.survey_date_fin)))
@@ -140,9 +140,9 @@ function generateEChartsGraph(data, panelElement, pointLabel) {
   chart.setOption(option);
 }
 
-// Function to fetch displacement data for the clicked annotation's point label
+// Function to fetch velocity data for the clicked annotation's point label
 function fetchVelocitytData(pointLabel, panelElement) {
-  fetch(`db/fetch_velocity_data.php?pointLabel=${pointLabel}`)
+  fetch(`${API_BASE}/surveys/points/${encodeURIComponent(pointLabel)}/velocity/`)
     .then((response) => response.json())
     .then((data) => {
       console.log(pointLabel, data);

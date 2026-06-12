@@ -33,6 +33,8 @@
     <script src="./libs/Cesium/Cesium.js"></script>
     <script src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 
+    <!-- API base URL from the shared config.php (defines const API_BASE) -->
+    <script src="/config.php"></script>
     <!-- Import POINTCLOUD -->
     <script type="module" src="viewer.js"></script>
     <!-- Import ANNOTATIONS -->

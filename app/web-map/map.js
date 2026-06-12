@@ -1,5 +1,6 @@
-// Fetch the years from belvedere.php
-fetch("belvedere_options.php")
+// Fetch the survey years from the backend API, populate the dropdown and
+// load the latest year with data on the map.
+fetch(`${API_BASE}/surveys/years/`)
   .then((response) => response.json())
   .then((years) => {
     // Populate the dropdown menu with the fetched years
@@ -10,6 +11,11 @@ fetch("belvedere_options.php")
       option.value = year;
       yearSelect.add(option);
     });
+    if (years.length > 0) {
+      var latestYear = years[years.length - 1];
+      yearSelect.value = latestYear;
+      fetchDataByYear(latestYear);
+    }
   })
   .catch((error) => console.error("Error fetching years:", error));
 
@@ -18,7 +24,7 @@ var fetchedData; // Global variable to store fetched data
 
 // Function to fetch data based on selected year
 function fetchDataByYear(year) {
-  fetch(`belvedere_surveys.php?year=${year}`)
+  fetch(`${API_BASE}/surveys/measurements/?year=${year}`)
     .then((response) => response.json())
     .then((data) => {
       fetchedData = data;
@@ -74,30 +80,10 @@ L.control
 
 L.control.scale().addTo(map);
 
-// Fetch point data from PHP script
-fetch("belvedere_surveys.php")
-  .then((response) => response.json())
-  .then((data) => {
-    // Store the fetched data globally
-    fetchedData = data;
-
-    // Create a layer group for the markers
-    var markerLayer = L.layerGroup();
-    // Add markers for each point
-    data.forEach((point) => {
-      L.circleMarker([point.lat, point.lon], { radius: 5, color: 'red', fillColor: 'red', fillOpacity: 1})
-        .addTo(markerLayer)
-        .bindPopup("<b>Label:</b> " + point.label);
-    });
-    // Add markerLayer to map
-    markerLayer.addTo(map);
-
-    // Adjust map height to fit viewport
-    var mapContainer = document.getElementById("map");
-    var headerHeight = document.querySelector("header").offsetHeight;
-    mapContainer.style.height = window.innerHeight - headerHeight + "px";
-  })
-  .catch((error) => console.error("Error fetching data:", error));
+// Adjust map height to fit viewport
+var mapContainer = document.getElementById("map");
+var headerHeight = document.querySelector("header").offsetHeight;
+mapContainer.style.height = window.innerHeight - headerHeight + "px";
 
 // Function to download data as CSV
 function downloadCSV() {
