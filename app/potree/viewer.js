@@ -31,15 +31,13 @@ window.cesiumViewer = new Cesium.Viewer("cesiumContainer", {
   selectionIndicator: false,
   timeline: false,
   navigationHelpButton: false,
-  // imageryProvider: Cesium.createOpenStreetMapImageryProvider({url: "https://a.tile.openstreetmap.org/",}),
-  imageryProvider: new Cesium.UrlTemplateImageryProvider({
-  url: 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png',
-  credit: 'Stamen Terrain'}),
+  imageryProvider: Cesium.createOpenStreetMapImageryProvider({url: "https://a.tile.openstreetmap.org/",}),
 });
 
 cesiumViewer.terrainProvider = new Cesium.CesiumTerrainProvider({
   url: "https://api.maptiler.com/tiles/terrain-quantized-mesh/?key=2hTOFLPdXApzq9gVeMKq", // get your own key at https://cloud.maptiler.com/
 });
+
 
 let cp = new Cesium.Cartesian3(
   4303414.154026048,
@@ -132,7 +130,7 @@ function loadPointCloud(url, name, visible = false) {
 }
 
 // Load basemap pointcloud
-loadPointCloud(`${S3_BASE}/background/metadata.json`, "Background", true);
+// loadPointCloud(`${S3_BASE}/background/metadata.json`, "Background", true);
 
 
 // Load all point cloud data
